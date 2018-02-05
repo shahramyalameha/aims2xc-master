@@ -14,11 +14,9 @@ For installing fhi-aims plugin for xcrysden, at first "install xcrysden" , then:
         chmod +x ./install
         ./install
 
-===================================================
 # Run 											      
 aims2xsf geometry.in						
 					
-===================================================
 # BUG report:
 If you see any bug in this plugin let me know.
 Researchgate:	https://www.researchgate.net/profile/Shahram_Yalameha
