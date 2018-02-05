@@ -1,0 +1,116 @@
+#!/bin/csh -f
+# ==== Mr.Shahram Yalameha ====
+# ==== https://www.researchgate.net/profile/Shahram_Yalameha ====
+# ==== yalameha93@gmail.com  ====
+# ==== sh.yalameha@ui.sci.ir ===
+# ==== Copyright (c) 2017 Shahram Yalameha ====
+set geometry=$1
+unalias rm
+unalias mv
+set file    = `pwd`
+set file    = $file:t
+set bold = `tput bold`
+set normal = `tput sgr0`
+set redd = `tput setaf 1`
+set clor = `tput setaf 6`
+set clor2 = `tput setaf 5`
+set green = `tput setaf 2`
+set nc = `tput sgr0`
+#===========================add para1======================================
+~/.aims2xsf/gem_f1 $geometry > .geometry.out
+set sed1 =  `head -1 < .outtemp2|tail -1|cut -f1 -d:`
+        echo " CRYSTAL" 
+        echo " CRYSTAL" >> geometry_temp
+	echo " PRIMVEC"	
+	echo " PRIMVEC"	>> geometry_temp
+        goto atom0       
+#============================add para2=====================================
+
+atom0:	
+set Nge_out=`cat .geometry.out | wc -l`
+set l = 1
+while ( $l <= 3 )
+set x11 =  `head -$l < .geometry.out|tail -1|cut -f1 -d:`
+set x21 = `head -$l < .geometry.out|tail -1|cut -f2 -d:`
+set x31 = `head -$l < .geometry.out|tail -1|cut -f3 -d:`
+@ l = $l + 1
+echo "     $x11 $x21 $x31" 
+echo "     $x11 $x21 $x31" >> geometry_temp
+end
+ echo " PRIMCOORD" 
+ echo " PRIMCOORD" >> geometry_temp
+	
+#===========================for atom var======================================
+
+atom1:
+set NATOM =  `tail -1 < .geometry.out|cut -f1 -d:`
+set nameat =  `head -4 < .geometry.out|tail -1|cut -f1 -d:`
+if ("$nameat" == "atom" )then
+set j = 1
+echo " "$NATOM" 1"
+echo " "$NATOM" 1" >> geometry_temp
+while ( $j <= $NATOM )
+set NATOMm = `echo "(($j) + 3)" |bc -l`
+set name4 = `head -$NATOMm < .geometry.out|tail -1|cut -f5 -d:`
+set A1 =  `head -$NATOMm < .geometry.out|tail -1|cut -f2 -d:`
+set A2 =  `head -$NATOMm < .geometry.out|tail -1|cut -f3 -d:`
+set A3 =  `head -$NATOMm < .geometry.out|tail -1|cut -f4 -d:`
+echo "     $name4	$A1 $A2 $A3" 
+echo "     $name4	$A1 $A2 $A3" >> geometry_temp
+@ j = $j + 1
+end
+endif
+	
+#============================for atom_frac var=====================================
+
+atom2:
+if ("$nameat" == "atom_frac" )then
+set i = 1
+echo " "$NATOM" 1"
+echo " "$NATOM" 1" >> geometry_temp
+while ( $i <= $NATOM )
+set NATOMm2 = `echo "(($i) +3 )" |bc -l`
+set Ax1 =  `head -$NATOMm2 < .geometry.out|tail -1|cut -f2 -d:`
+set Ay2 =  `head -$NATOMm2 < .geometry.out|tail -1|cut -f3 -d:`
+set Az3 =  `head -$NATOMm2 < .geometry.out|tail -1|cut -f4 -d:`
+
+set p = 1
+while ( $p <= 3 )
+set x = `head -1 < .geometry.out|tail -1|cut -f$p -d:`
+set y = `head -2 < .geometry.out|tail -1|cut -f$p -d:`
+set z = `head -3 < .geometry.out|tail -1|cut -f$p -d:`
+
+set Atfx = `echo "scale=8;$x*($Ax1)+$y*($Ay2)+$z*($Az3)" | bc -l`
+set Atfy = `echo "scale=8;$x*($Ax1)+$y*($Ay2)+$z*($Az3)" | bc -l`
+set Atfz = `echo "scale=8;$x*($Ax1)+$y*($Ay2)+$z*($Az3)" | bc -l`
+echo "$Atfx : " >> .outtemp1
+@ p = $p + 1
+end
+@ i = $i + 1
+end
+
+set N2=`cat .outtemp1 | wc -l`
+set q = 1
+set q2 = 0
+while ( $q <= $NATOM)
+set NATOMm3 = `echo "(($q) +3 )" |bc -l`
+set name2 = `head -$NATOMm3 < .geometry.out|tail -1|cut -f5 -d:`
+set nx =  `echo " (0+$q2)+($q)" | bc -l`
+set ny =  `echo " (1+$q2)+($q)" | bc -l`
+set nz =  `echo " (2+$q2)+($q)" | bc -l`
+set Btfx = `head -$nx < .outtemp1|tail -1|cut -f1 -d:`
+set Btfy = `head -$ny < .outtemp1|tail -1|cut -f1 -d:`
+set Btfz = `head -$nz < .outtemp1|tail -1|cut -f1 -d:`
+
+echo "     $name2	$Btfx $Btfy $Btfz"
+echo "     $name2	$Btfx $Btfy $Btfz" >> geometry_temp
+@ q = $q + 1
+@ q2 = $q2 + 2
+end
+endif
+endif
+
+#===========================clean temp file======================================
+if (-e .outtemp1 ) rm  .outtemp1
+if (-e .outtemp2 ) rm .outtemp2
+
